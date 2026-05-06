@@ -17,7 +17,7 @@ venv/
 # Data and logs (instance state)
 data/
 logs/
-graph.json
+/graph.json
 *.jsonl
 
 # Whisper models (downloaded separately — large)

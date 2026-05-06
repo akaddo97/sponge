@@ -1,0 +1,462 @@
+{
+  "directed": true,
+  "nodes": [
+    {
+      "id": "person_maya_okonkwo",
+      "label": "Maya Okonkwo",
+      "file_type": "person",
+      "headline": "Founder and creative director, Lantern-Bough Games",
+      "aliases": [
+        "Maya O.",
+        "M. Okonkwo"
+      ]
+    },
+    {
+      "id": "person_jonas_lindqvist",
+      "label": "Jonas Lindqvist",
+      "file_type": "person",
+      "headline": "Engineering lead — gameplay systems and tooling"
+    },
+    {
+      "id": "person_priya_balasubramanian",
+      "label": "Priya Balasubramanian",
+      "file_type": "person",
+      "headline": "Art director — handpainted pixel + parallax compositing"
+    },
+    {
+      "id": "person_diego_alvarez",
+      "label": "Diego Alvarez",
+      "file_type": "person",
+      "headline": "Sound designer and composer — adaptive audio"
+    },
+    {
+      "id": "person_sarah_chen",
+      "label": "Sarah Chen",
+      "file_type": "person",
+      "headline": "Narrative designer — branching dialogue and worldbuilding"
+    },
+    {
+      "id": "person_amir_hassan",
+      "label": "Amir Hassan",
+      "file_type": "person",
+      "headline": "Producer — schedule, contracts, external partnerships"
+    },
+    {
+      "id": "company_lantern_press",
+      "label": "Lantern Press",
+      "file_type": "company",
+      "description": "Boutique indie publisher specialising in narrative-led PC titles."
+    },
+    {
+      "id": "company_glass_cliff_games",
+      "label": "Glass Cliff Games",
+      "file_type": "company",
+      "description": "Mid-size studio working in the same atmospheric-narrative space."
+    },
+    {
+      "id": "company_pixel_orchard",
+      "label": "Pixel Orchard Studio",
+      "file_type": "company",
+      "description": "Small studio with a back catalogue of two pixel-art adventures."
+    },
+    {
+      "id": "company_indie_haven",
+      "label": "Indie Haven Fund",
+      "file_type": "company",
+      "description": "Non-profit grant body funding sub-€100k indie projects across the EU."
+    },
+    {
+      "id": "company_hollow_bough",
+      "label": "Hollow Bough Distribution",
+      "file_type": "company",
+      "description": "Digital storefront and key-distribution partner for indie titles."
+    },
+    {
+      "id": "project_paper_lanterns",
+      "label": "Paper Lanterns",
+      "file_type": "project",
+      "description": "Atmospheric narrative game — current flagship, in development.",
+      "status": "in_progress",
+      "start_date": "2023-03-01",
+      "tags": [
+        "narrative",
+        "atmospheric",
+        "flagship"
+      ]
+    },
+    {
+      "id": "project_tide_etudes",
+      "label": "Tide Études",
+      "file_type": "project",
+      "description": "Procedural-music puzzle game — released 2024, modest commercial success.",
+      "status": "released",
+      "start_date": "2022-01-10",
+      "tags": [
+        "procedural_music",
+        "released"
+      ]
+    },
+    {
+      "id": "project_cinder_path",
+      "label": "Cinder Path",
+      "file_type": "project",
+      "description": "Roguelike prototype — paused indefinitely after design dead-end.",
+      "status": "paused",
+      "start_date": "2021-09-01",
+      "tags": [
+        "roguelike",
+        "paused"
+      ]
+    },
+    {
+      "id": "skill_godot",
+      "label": "Godot Engine",
+      "file_type": "skill",
+      "description": "Open-source game engine — studio's primary tooling since 2022."
+    },
+    {
+      "id": "skill_pixel_art",
+      "label": "Pixel art",
+      "file_type": "skill",
+      "description": "Hand-drawn low-resolution sprite work, often with parallax."
+    },
+    {
+      "id": "skill_procedural_music",
+      "label": "Procedural music",
+      "file_type": "skill",
+      "description": "Generative composition systems that respond to gameplay state."
+    },
+    {
+      "id": "skill_branching_narrative",
+      "label": "Branching narrative",
+      "file_type": "skill",
+      "description": "Authoring tooling and runtime systems for player-driven dialogue trees."
+    },
+    {
+      "id": "city_lisbon",
+      "label": "Lisbon",
+      "file_type": "city"
+    },
+    {
+      "id": "city_montreal",
+      "label": "Montréal",
+      "file_type": "city"
+    },
+    {
+      "id": "city_kyoto",
+      "label": "Kyoto",
+      "file_type": "city"
+    },
+    {
+      "id": "concept_emergent_storytelling",
+      "label": "Emergent storytelling",
+      "file_type": "concept",
+      "description": "Narrative that arises from system interaction rather than scripted beats."
+    },
+    {
+      "id": "concept_seasonal_release_cadence",
+      "label": "Seasonal release cadence",
+      "file_type": "concept",
+      "description": "Shipping tied to seasonal storefront moments (summer sale, winter sale)."
+    },
+    {
+      "id": "concept_diegetic_ui",
+      "label": "Diegetic UI",
+      "file_type": "concept",
+      "description": "Interface elements that exist within the world the player inhabits."
+    },
+    {
+      "id": "concept_player_authored_meaning",
+      "label": "Player-authored meaning",
+      "file_type": "concept",
+      "description": "Design pattern where interpretation is left to the player rather than narrated."
+    },
+    {
+      "id": "doc_paper_lanterns_design_doc",
+      "label": "Paper Lanterns — design doc",
+      "file_type": "document",
+      "description": "Living design document covering scope, vertical slice, milestones."
+    },
+    {
+      "id": "doc_tide_etudes_postmortem",
+      "label": "Tide Études — postmortem",
+      "file_type": "document",
+      "description": "Retro covering what shipped on time, what slipped, what was cut."
+    },
+    {
+      "id": "doc_studio_manifesto_2024",
+      "label": "Studio manifesto (2024)",
+      "file_type": "document",
+      "description": "Founder's statement of values: emergent narrative, modest scope, sustainable pace."
+    },
+    {
+      "id": "doc_cinder_path_pause_memo",
+      "label": "Cinder Path — pause memo",
+      "file_type": "document",
+      "description": "Internal memo explaining why the roguelike prototype was shelved."
+    },
+    {
+      "id": "doc_industry_landscape_2024",
+      "label": "Indie industry landscape (2024)",
+      "file_type": "document",
+      "description": "Annual scan of competitor releases, pricing, storefront performance."
+    }
+  ],
+  "edges": [
+    {
+      "source": "person_maya_okonkwo",
+      "target": "company_lantern_press",
+      "relation": "publishes_with"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "city_lisbon",
+      "relation": "based_in"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "doc_studio_manifesto_2024",
+      "relation": "authored"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "project_paper_lanterns",
+      "relation": "founded"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "project_tide_etudes",
+      "relation": "founded"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "project_cinder_path",
+      "relation": "founded"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "person_jonas_lindqvist",
+      "relation": "knows"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "person_priya_balasubramanian",
+      "relation": "knows"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "person_diego_alvarez",
+      "relation": "knows"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "person_sarah_chen",
+      "relation": "knows"
+    },
+    {
+      "source": "person_maya_okonkwo",
+      "target": "person_amir_hassan",
+      "relation": "knows"
+    },
+    {
+      "source": "person_jonas_lindqvist",
+      "target": "project_paper_lanterns",
+      "relation": "works_on"
+    },
+    {
+      "source": "person_priya_balasubramanian",
+      "target": "project_paper_lanterns",
+      "relation": "works_on"
+    },
+    {
+      "source": "person_diego_alvarez",
+      "target": "project_paper_lanterns",
+      "relation": "works_on"
+    },
+    {
+      "source": "person_sarah_chen",
+      "target": "project_paper_lanterns",
+      "relation": "works_on"
+    },
+    {
+      "source": "person_amir_hassan",
+      "target": "project_paper_lanterns",
+      "relation": "works_on"
+    },
+    {
+      "source": "person_jonas_lindqvist",
+      "target": "skill_godot",
+      "relation": "has_skill"
+    },
+    {
+      "source": "person_jonas_lindqvist",
+      "target": "skill_branching_narrative",
+      "relation": "has_skill"
+    },
+    {
+      "source": "person_priya_balasubramanian",
+      "target": "skill_pixel_art",
+      "relation": "has_skill"
+    },
+    {
+      "source": "person_diego_alvarez",
+      "target": "skill_procedural_music",
+      "relation": "has_skill"
+    },
+    {
+      "source": "person_sarah_chen",
+      "target": "skill_branching_narrative",
+      "relation": "has_skill"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "skill_godot",
+      "relation": "uses"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "skill_pixel_art",
+      "relation": "uses"
+    },
+    {
+      "source": "project_tide_etudes",
+      "target": "skill_procedural_music",
+      "relation": "uses"
+    },
+    {
+      "source": "person_jonas_lindqvist",
+      "target": "city_montreal",
+      "relation": "based_in"
+    },
+    {
+      "source": "person_priya_balasubramanian",
+      "target": "city_lisbon",
+      "relation": "based_in"
+    },
+    {
+      "source": "person_diego_alvarez",
+      "target": "city_kyoto",
+      "relation": "based_in"
+    },
+    {
+      "source": "person_sarah_chen",
+      "target": "city_lisbon",
+      "relation": "based_in"
+    },
+    {
+      "source": "person_amir_hassan",
+      "target": "city_montreal",
+      "relation": "based_in"
+    },
+    {
+      "source": "doc_paper_lanterns_design_doc",
+      "target": "project_paper_lanterns",
+      "relation": "documents"
+    },
+    {
+      "source": "doc_tide_etudes_postmortem",
+      "target": "project_tide_etudes",
+      "relation": "documents"
+    },
+    {
+      "source": "doc_cinder_path_pause_memo",
+      "target": "project_cinder_path",
+      "relation": "documents"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "concept_emergent_storytelling",
+      "relation": "embodies"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "concept_diegetic_ui",
+      "relation": "uses"
+    },
+    {
+      "source": "project_tide_etudes",
+      "target": "concept_player_authored_meaning",
+      "relation": "embodies"
+    },
+    {
+      "source": "doc_studio_manifesto_2024",
+      "target": "concept_emergent_storytelling",
+      "relation": "mentions"
+    },
+    {
+      "source": "doc_studio_manifesto_2024",
+      "target": "concept_player_authored_meaning",
+      "relation": "mentions"
+    },
+    {
+      "source": "doc_studio_manifesto_2024",
+      "target": "concept_seasonal_release_cadence",
+      "relation": "mentions"
+    },
+    {
+      "source": "concept_diegetic_ui",
+      "target": "concept_emergent_storytelling",
+      "relation": "relates_to"
+    },
+    {
+      "source": "concept_player_authored_meaning",
+      "target": "concept_emergent_storytelling",
+      "relation": "relates_to"
+    },
+    {
+      "source": "company_glass_cliff_games",
+      "target": "company_pixel_orchard",
+      "relation": "competes_with"
+    },
+    {
+      "source": "company_indie_haven",
+      "target": "project_cinder_path",
+      "relation": "funds"
+    },
+    {
+      "source": "company_indie_haven",
+      "target": "project_tide_etudes",
+      "relation": "funds"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "company_lantern_press",
+      "relation": "publishes_via"
+    },
+    {
+      "source": "project_paper_lanterns",
+      "target": "company_hollow_bough",
+      "relation": "distributes_via"
+    },
+    {
+      "source": "project_tide_etudes",
+      "target": "company_hollow_bough",
+      "relation": "distributes_via"
+    },
+    {
+      "source": "project_tide_etudes",
+      "target": "company_lantern_press",
+      "relation": "released_by"
+    },
+    {
+      "source": "doc_industry_landscape_2024",
+      "target": "company_glass_cliff_games",
+      "relation": "mentions"
+    },
+    {
+      "source": "doc_industry_landscape_2024",
+      "target": "company_pixel_orchard",
+      "relation": "mentions"
+    },
+    {
+      "source": "doc_industry_landscape_2024",
+      "target": "company_lantern_press",
+      "relation": "mentions"
+    },
+    {
+      "source": "doc_industry_landscape_2024",
+      "target": "concept_seasonal_release_cadence",
+      "relation": "mentions"
+    }
+  ]
+}
