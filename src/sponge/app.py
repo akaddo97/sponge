@@ -171,9 +171,11 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         v0.1 is sync (no async polling). Long memos block the request thread;
         keep memos under ~60s for the in-browser flow.
         """
-        if "audio" not in request.files:
-            return jsonify({"ok": False, "error": "audio file required"}), 400
-        upload = request.files["audio"]
+        # Field name matches the JS FormData contract (`file`) shared with AKKG's
+        # mobile UI. The frontend appends as form.append('file', blob, ...).
+        if "file" not in request.files:
+            return jsonify({"ok": False, "error": "audio file required (form field 'file')"}), 400
+        upload = request.files["file"]
         if not upload.filename:
             return jsonify({"ok": False, "error": "filename required"}), 400
 
@@ -196,13 +198,30 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         except Exception as exc:
             return jsonify({"ok": False, "error": f"{type(exc).__name__}: {exc}"}), 500
 
+        # Enrich proposal edges with source/target labels so the inline
+        # verify-card in the chat can render readable text without a
+        # second round-trip. New nodes carry their own label in the
+        # proposal; existing nodes are looked up via the backend.
+        proposal = dict(result.proposal or {})
+        node_labels = {n.get("id"): n.get("label", n.get("id", ""))
+                       for n in proposal.get("nodes", []) if n.get("id")}
+        for n in app.config["SPONGE_BACKEND"].all_nodes():
+            nid = n.get("id")
+            if nid and nid not in node_labels:
+                node_labels[nid] = n.get("label", nid)
+        proposal["edges"] = [
+            {**e,
+             "source_label": node_labels.get(e.get("source", ""), e.get("source", "")),
+             "target_label": node_labels.get(e.get("target", ""), e.get("target", ""))}
+            for e in proposal.get("edges", [])
+        ]
         return jsonify({
             "ok": True,
             "memo_id": result.memo_id,
             "user_transcript": result.cleaned.text,
             "briefer_text": result.briefer_reply,
             "commit_summary": result.commit_summary,
-            "proposal": result.proposal,
+            "proposal": proposal,
         })
 
     @app.route("/api/voice/job/<job_id>")
@@ -319,8 +338,11 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         v0.2. v0.1 just acknowledges typed input; voice memos are the canonical
         graph-mutation surface.
         """
+        # Accept both `message` (current JS contract — see static/js/sponge.js)
+        # and `query` (legacy/parent-project name) so callers don't have to know
+        # which one this version expects.
         body = request.get_json(silent=True) or {}
-        text = (body.get("query") or "").strip()
+        text = (body.get("message") or body.get("query") or "").strip()
         if not text:
             return Response(_ssesend({"type": "error", "error": "empty query"}), mimetype="text/event-stream")
 

@@ -175,5 +175,22 @@
   </div>
 </template>
 
+<template id="jazz-verify-card-template">
+  <div class="jazz-bubble-row">
+    <div class="jazz-verify-card" data-state="proposed">
+      <div class="jazz-verify-card-header">
+        <div class="jazz-verify-card-dot"></div>
+        <div class="jazz-verify-card-title">Proposed graph mutations</div>
+      </div>
+      <div class="jazz-verify-card-list" data-field="list"></div>
+      <div class="jazz-verify-card-actions">
+        <button type="button" class="jazz-verify-btn jazz-verify-btn-yes" data-action="apply">✓ Verify</button>
+        <button type="button" class="jazz-verify-btn jazz-verify-btn-no"  data-action="reject">✗ Discard</button>
+      </div>
+      <div class="jazz-verify-card-status" data-field="status" hidden></div>
+    </div>
+  </div>
+</template>
+
 <script src="{{ url_for('static', filename='js/sponge.js') }}" defer></script>
 {% endblock %}

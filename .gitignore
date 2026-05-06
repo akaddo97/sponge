@@ -29,6 +29,7 @@ archive/voice_memos/
 
 # Demo recordings (regenerated locally)
 docs/*.gif
+!docs/demo.gif
 docs/*.mp4
 
 # OS / editor cruft
@@ -36,3 +37,4 @@ docs/*.mp4
 .idea/
 .vscode/
 *.swp
+docs/*.MOV

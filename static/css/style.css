@@ -414,6 +414,127 @@ body.jazz-chat-active .jazz-chat-surface {
   text-decoration: none;
 }
 
+/* === INLINE VERIFY CARD ===
+   Propose-approve-commit moat rendered inline in the chat. After a voice
+   memo, this card shows the proposed nodes/edges with verify/discard
+   buttons. State machine: proposed → (verified | rejected | error). */
+.jazz-verify-card {
+  background: #1d1d1d;
+  border: 1px solid #3a3a3a;
+  border-radius: 14px;
+  padding: 13px 15px;
+  max-width: 90%;
+  margin-top: 4px;
+}
+.jazz-verify-card[data-state="verified"] {
+  border-color: #4caf50;
+  background: #1b2620;
+}
+.jazz-verify-card[data-state="rejected"] {
+  border-color: #555;
+  opacity: 0.65;
+}
+.jazz-verify-card[data-state="error"] {
+  border-color: #FF6B6B;
+}
+.jazz-verify-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.jazz-verify-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sp-yellow);
+  flex-shrink: 0;
+}
+.jazz-verify-card[data-state="verified"] .jazz-verify-card-dot { background: #4caf50; }
+.jazz-verify-card[data-state="rejected"] .jazz-verify-card-dot { background: #888; }
+.jazz-verify-card[data-state="error"] .jazz-verify-card-dot { background: #FF6B6B; }
+.jazz-verify-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ddd;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.jazz-verify-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+  padding-left: 2px;
+}
+.jazz-verify-item {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #ccc;
+  word-break: break-word;
+}
+.jazz-verify-kind {
+  color: #888;
+  font-weight: 500;
+}
+.jazz-verify-label {
+  color: #fff;
+  font-weight: 500;
+}
+.jazz-verify-rel {
+  color: #888;
+  font-style: italic;
+}
+.jazz-verify-card-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 0.5px solid #2e2e2e;
+  padding-top: 10px;
+}
+.jazz-verify-card[data-state="verified"] .jazz-verify-card-actions,
+.jazz-verify-card[data-state="rejected"] .jazz-verify-card-actions {
+  display: none;
+}
+.jazz-verify-btn {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.jazz-verify-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.jazz-verify-btn-yes {
+  background: var(--sp-yellow);
+  color: #111;
+}
+.jazz-verify-btn-yes:active:not(:disabled) {
+  background: #d8c540;
+}
+.jazz-verify-btn-no {
+  background: #2a2a2a;
+  color: #ccc;
+}
+.jazz-verify-btn-no:active:not(:disabled) {
+  background: #383838;
+}
+.jazz-verify-card-status {
+  font-size: 12px;
+  font-weight: 500;
+  color: #aaa;
+  text-align: center;
+  padding-top: 4px;
+}
+.jazz-verify-card[data-state="verified"] .jazz-verify-card-status { color: #4caf50; }
+.jazz-verify-card[data-state="rejected"] .jazz-verify-card-status { color: #888; }
+.jazz-verify-card[data-state="error"] .jazz-verify-card-status { color: #FF6B6B; }
+
 /* === MIC ACTIVE STATE (listening, inline in chat) === */
 .jazz-mic-active {
   display: flex;

@@ -3,11 +3,15 @@
 **Voice-first agentic UI for a personal knowledge graph.**
 
 Tap to record on your phone → on-device transcription → the model proposes
-graph mutations → you verify before commit → conversational briefer replies.
+graph mutations → you verify inline before commit → conversational briefer replies.
 Self-hosted. Provider-agnostic LLM. Bring your own graph.
 
 > *Friction is the feature.* The propose-approve-commit gate is the moat —
 > the model proposes, you decide. You stay the editor of your own graph.
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Sponge demo — voice memo, propose, inline verify, briefer reply" width="360" />
+</p>
 
 ## What it does
 
@@ -19,11 +23,13 @@ you just met. By the time you're back at your laptop, Sponge has:
 3. Asked the configured LLM to propose graph mutations (new person node, edges to
    the company they work at, a project they mentioned).
 4. Committed those proposals as **provisional** entries (verified=False).
-5. Replied in chat: *"Got it — added Alice and her link to the cafe project.
-   Verify when you're ready."*
+5. Replied in chat: *"Got Alice and the cafe project — flagged as a possible collaborator."*
+6. Rendered an inline verify card directly under that reply, listing each
+   proposed node and edge with ✓ Verify / ✗ Discard buttons — no tab-switch.
 
-You open `/verify` on your phone, scroll the proposed nodes/edges, tap *Verify*
-on the ones you want to keep, *Reject* the rest. The graph updates atomically.
+You glance at the card, tap ✓ if it looks right (or ✗ to drop it). The provisional
+entries flip to verified in one shot. The full batch view at `/verify` is still
+there for catching up on memos you didn't decide on in the moment.
 
 ## The flow
 

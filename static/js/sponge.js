@@ -523,6 +523,102 @@
     return rowEl;
   }
 
+  // ── INLINE VERIFY CARD ────────────────────────────────────────────────────
+  // After audio_upload commits provisional nodes/edges, render a card-bubble
+  // listing each mutation with ✓/✗ buttons. Click ✓ → /api/verify/apply,
+  // ✗ → /api/verify/reject. Card swaps to a locked summary on success.
+  // Backend ships proposal.edges with source_label / target_label already
+  // resolved against the live graph so this layer is pure rendering.
+  function makeVerifyCardBubble(commitSummary, proposal) {
+    const t = $('#jazz-verify-card-template');
+    if (!t) return null;
+    const node = t.content.cloneNode(true);
+    const row = node.querySelector('.jazz-bubble-row');
+    const card = node.querySelector('.jazz-verify-card');
+    const list = node.querySelector('[data-field="list"]');
+    const status = node.querySelector('[data-field="status"]');
+    if (!card || !list) return null;
+
+    const source = commitSummary && commitSummary.source;
+    if (!source) return null;
+    card.dataset.source = source;
+
+    const nodes = (proposal && proposal.nodes) || [];
+    const edges = (proposal && proposal.edges) || [];
+    if (!nodes.length && !edges.length) return null;
+
+    nodes.forEach(n => {
+      const item = document.createElement('div');
+      item.className = 'jazz-verify-item';
+      item.innerHTML = `<span class="jazz-verify-kind">+ ${escCh(n.file_type || 'node')}</span> · <span class="jazz-verify-label">${escCh(n.label || n.id || '?')}</span>`;
+      list.appendChild(item);
+    });
+    edges.forEach(e => {
+      const item = document.createElement('div');
+      item.className = 'jazz-verify-item';
+      const src = e.source_label || e.source || '?';
+      const tgt = e.target_label || e.target || '?';
+      const rel = (e.relation || 'related_to').replace(/_/g, ' ');
+      item.innerHTML = `<span class="jazz-verify-kind">+ edge</span> · <span class="jazz-verify-label">${escCh(src)}</span> <span class="jazz-verify-rel">— ${escCh(rel)} →</span> <span class="jazz-verify-label">${escCh(tgt)}</span>`;
+      list.appendChild(item);
+    });
+
+    const lockCard = (state, msg) => {
+      card.dataset.state = state;
+      card.querySelectorAll('.jazz-verify-btn').forEach(b => { b.disabled = true; });
+      if (msg) {
+        status.textContent = msg;
+        status.hidden = false;
+      }
+    };
+
+    card.querySelectorAll('.jazz-verify-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const action = btn.dataset.action;
+        if (!action) return;
+        const path = action === 'apply' ? '/api/verify/apply' : '/api/verify/reject';
+        // Mid-call locked state — stop double-clicks
+        card.querySelectorAll('.jazz-verify-btn').forEach(b => { b.disabled = true; });
+        try {
+          const r = await fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provisional_source: source }),
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok || !data.ok) {
+            lockCard('error', `Error: ${data.error || 'HTTP ' + r.status}`);
+            // Re-enable so the user can retry
+            card.querySelectorAll('.jazz-verify-btn').forEach(b => { b.disabled = false; });
+            card.dataset.state = 'proposed';
+            return;
+          }
+          if (action === 'apply') {
+            const n = data.flipped || (nodes.length + edges.length);
+            lockCard('verified', `✓ Verified — ${n} item${n === 1 ? '' : 's'} committed to graph`);
+          } else {
+            const n = data.removed || (nodes.length + edges.length);
+            lockCard('rejected', `✗ Discarded — ${n} item${n === 1 ? '' : 's'} dropped`);
+          }
+        } catch (err) {
+          lockCard('error', `Network error: ${err.message}`);
+          card.querySelectorAll('.jazz-verify-btn').forEach(b => { b.disabled = false; });
+          card.dataset.state = 'proposed';
+        }
+      });
+    });
+
+    return row;
+  }
+
+  // Lightweight HTML-escape — only for short labels coming from the graph.
+  function escCh(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function makeCardBubble(card) {
     const t = $('#jazz-card-template');
     if (!t) return null;
@@ -903,11 +999,13 @@
         // bubble. Strip markdown defensively (the persona forbids it but
         // the model occasionally slips). Then consume the pending so the
         // SSE doesn't re-fire streamQuery on the same memo.
-        if (data && data.briefer_text) {
+        if (data && (data.briefer_text || data.user_transcript)) {
           openChat();
           const userText = (data.user_transcript || '').trim();
           if (userText) appendBubble(makeBubble('sent', userText));
-          appendBubble(makeBubble('recv', stripMarkdown(data.briefer_text)));
+          if (data.briefer_text) {
+            appendBubble(makeBubble('recv', stripMarkdown(data.briefer_text)));
+          }
           if (data.pending_id) {
             __M5_BRIEFER_HANDLED.add(data.pending_id);
             fetch('/api/voice/pending/consume', {
@@ -918,6 +1016,19 @@
           }
         }
         // === END M5: BRIEFER ===
+
+        // === INLINE VERIFY CARD ===
+        // Render the propose-approve-commit card right in the chat surface
+        // when the audio_upload pipeline produced any provisional nodes /
+        // edges. The card has ✓/✗ buttons that hit /api/verify/apply or
+        // /api/verify/reject inline — no tab-switch.
+        if (data && data.commit_summary
+            && (data.commit_summary.nodes_added > 0 || data.commit_summary.edges_added > 0)) {
+          openChat();
+          const card = makeVerifyCardBubble(data.commit_summary, data.proposal || {});
+          if (card) appendBubble(card);
+        }
+        // === END INLINE VERIFY CARD ===
       } catch { /* response wasn't JSON; ignore */ }
     } catch (err) {
       showStatus(`Upload error: ${err.message}`);
