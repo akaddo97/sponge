@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Sponge — Jazz{% endblock %}
+{% block body_class %}jazz-immersive{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Sponge home — voice-first agentic UI. -->
+<div class="jazz-screen" data-jazz="root">
+
+  <!-- ── HOME ZONE (collapses on chat takeover) ───────────────────────────── -->
+  <div class="jazz-home-zone">
+
+    <div class="jazz-status-bar">
+      <span>9:41</span>
+      <span aria-hidden="true">▲ ● ▬</span>
+    </div>
+
+    <section class="jazz-hero">
+      <div class="jazz-logo">Sp<span class="jazz-logo-accent">o</span>nge</div>
+      <div class="jazz-hero-tagline">knowledge graph</div>
+      <button id="jazz-mic-button"
+              class="jazz-mic-btn"
+              type="button"
+              aria-pressed="false"
+              aria-label="Tap to start or stop recording">
+        <svg width="26" height="26" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <rect x="7" y="1" width="8" height="13" rx="4" fill="#1A1A1A"/>
+          <path d="M3 11c0 4.42 3.58 8 8 8s8-3.58 8-8" stroke="#1A1A1A" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="11" y1="19" x2="11" y2="21" stroke="#1A1A1A" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div class="jazz-mic-hint">tap to record · tap again to send</div>
+    </section>
+
+    <div class="jazz-divider"></div>
+
+    <div class="jazz-grid-wrap">
+      <div class="jazz-grid-label">Your graph · today</div>
+      <div class="jazz-grid">
+
+        <div class="jazz-widget" data-widget="graph-size">
+          <div>
+            <div class="jazz-widget-label">Graph size</div>
+            <div class="jazz-widget-value" data-field="nodes">—</div>
+            <div class="jazz-widget-sub" data-field="sub">— nodes · — edges</div>
+          </div>
+          <div class="jazz-widget-bar-wrap">
+            <div class="jazz-widget-bar" data-field="bar" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="jazz-widget" data-widget="last-ingest">
+          <div>
+            <div class="jazz-widget-label">Last ingest</div>
+            <div class="jazz-widget-value jazz-widget-value-sm" data-field="name">—</div>
+            <div class="jazz-widget-sub" data-field="sub">awaiting activity</div>
+          </div>
+          <div class="jazz-spark" data-field="spark">
+            <div class="jazz-spark-bar" style="height: 40%;"></div>
+            <div class="jazz-spark-bar" style="height: 60%;"></div>
+            <div class="jazz-spark-bar" style="height: 35%;"></div>
+            <div class="jazz-spark-bar" style="height: 80%;"></div>
+            <div class="jazz-spark-bar" style="height: 55%;"></div>
+            <div class="jazz-spark-bar jazz-spark-bar-active" style="height: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="jazz-widget" data-widget="top-connections">
+          <div class="jazz-widget-label">Top connections</div>
+          <div class="jazz-node-list" data-field="pills">
+            <div class="jazz-node-pill"><div class="jazz-node-pill-dot"></div>—</div>
+          </div>
+        </div>
+
+        <div class="jazz-widget" data-widget="this-week">
+          <div>
+            <div class="jazz-widget-label">This week</div>
+            <div class="jazz-widget-value" data-field="count">—</div>
+            <div class="jazz-widget-sub" data-field="sub">— ingests</div>
+          </div>
+          <div class="jazz-spark" data-field="spark">
+            <div class="jazz-spark-bar" style="height: 30%;"></div>
+            <div class="jazz-spark-bar" style="height: 70%;"></div>
+            <div class="jazz-spark-bar" style="height: 50%;"></div>
+            <div class="jazz-spark-bar" style="height: 90%;"></div>
+            <div class="jazz-spark-bar" style="height: 45%;"></div>
+            <div class="jazz-spark-bar jazz-spark-bar-active" style="height: 65%;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <!-- ── END HOME ZONE ────────────────────────────────────────────────────── -->
+
+  <div class="jazz-stats-footer" id="jazz-stats-footer">
+    <span class="jazz-stats-text" data-field="text">NODES — · EDGES — · VALIDATOR — · LAST INGEST — · GPU NONE · SERVER NONE · HOST localhost</span>
+  </div>
+
+  <!-- ── CHAT SURFACE (full-screen takeover on mic-tap / submit) ──────────── -->
+  <div class="jazz-chat-surface" id="jazz-chat-surface" aria-hidden="true">
+
+    <div class="jazz-status-bar">
+      <span>9:41</span>
+      <span aria-hidden="true">▲ ● ▬</span>
+    </div>
+
+    <div class="jazz-top-bar">
+      <div class="jazz-top-bar-left">
+        <button id="jazz-back-btn" class="jazz-back-btn" type="button" aria-label="Back to home">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+            <path d="M7 1L3 5L7 9" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="jazz-top-logo">Sp<span class="jazz-logo-accent">o</span>nge</div>
+      </div>
+      <a class="jazz-graph-pill" href="/verify">verify →</a>
+    </div>
+
+    <div class="jazz-chat-area" id="jazz-chat-area" aria-live="polite" aria-label="Chat conversation">
+      <div class="jazz-time-label" id="jazz-time-label">today</div>
+    </div>
+
+    <div class="jazz-input-bar">
+      <button id="jazz-input-mic-btn" class="jazz-input-mic-btn" type="button" aria-pressed="false" aria-label="Tap to start or stop recording">
+        <svg width="14" height="14" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <rect x="7" y="1" width="8" height="13" rx="4" fill="#1A1A1A"/>
+          <path d="M3 11c0 4.42 3.58 8 8 8s8-3.58 8-8" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="11" y1="19" x2="11" y2="21" stroke="#1A1A1A" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <form id="jazz-search-form" class="jazz-input-form" autocomplete="off">
+        <input id="jazz-search-input"
+               class="jazz-input-field"
+               type="text"
+               name="query"
+               placeholder="Ask Sponge or paste a note…"
+               aria-label="Sponge query input">
+      </form>
+      <button id="jazz-input-send-btn" class="jazz-input-send-btn" type="button" aria-label="Send">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M1 11L11 1M11 1H4M11 1V8" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+  <!-- ── END CHAT SURFACE ─────────────────────────────────────────────────── -->
+
+</div>
+
+<template id="jazz-bubble-template">
+  <div class="jazz-bubble-row">
+    <div class="jazz-bubble">
+      <div class="jazz-bubble-body"></div>
+    </div>
+  </div>
+</template>
+
+<template id="jazz-card-template">
+  <div class="jazz-bubble-row">
+    <div class="jazz-graph-card">
+      <div class="jazz-graph-card-header">
+        <div class="jazz-graph-card-dot"></div>
+        <div class="jazz-graph-card-name"></div>
+      </div>
+      <div class="jazz-graph-card-sub"></div>
+      <div class="jazz-graph-card-tags"></div>
+      <a class="jazz-graph-card-link" href="#">View profile →</a>
+    </div>
+  </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/sponge.js') }}" defer></script>
+{% endblock %}

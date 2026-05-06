@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Sponge Voice Watcher — launchd user-agent.
+
+  Replace REPLACE_ME placeholders with absolute paths on your machine.
+
+  ONE-TIME INSTALL (macOS):
+    1. Replace the four REPLACE_ME paths below with your repo's absolute paths.
+    2. Replace REPLACE_ME_INBOX with your iCloud voice_inbox path. Typical:
+       /Users/<you>/Library/Mobile Documents/iCloud~com~apple~Shortcuts/Documents/voice_inbox
+    3. Symlink into ~/Library/LaunchAgents/ (preferred — edit-in-place keeps working):
+         ln -s /absolute/path/to/sponge/launchd/com.sponge.voice-watcher.plist \
+               ~/Library/LaunchAgents/com.sponge.voice-watcher.plist
+    4. Load: launchctl load ~/Library/LaunchAgents/com.sponge.voice-watcher.plist
+    5. Verify: launchctl print gui/$(id -u)/com.sponge.voice-watcher | head -20
+    6. Tail: tail -f /absolute/path/to/sponge/logs/voice_watcher.log
+
+  STOP / RELOAD:
+    launchctl unload ~/Library/LaunchAgents/com.sponge.voice-watcher.plist
+    launchctl load   ~/Library/LaunchAgents/com.sponge.voice-watcher.plist
+
+  KeepAlive=true → launchd auto-restarts the watcher if it crashes.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.sponge.voice-watcher</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>REPLACE_ME/sponge/.venv/bin/python</string>
+        <string>-m</string>
+        <string>sponge.voice_watcher</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>REPLACE_ME/sponge</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>SPONGE_INBOX</key>
+        <string>REPLACE_ME_INBOX</string>
+        <key>SPONGE_GRAPH_PATH</key>
+        <string>REPLACE_ME/sponge/graph.json</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>REPLACE_ME/sponge/logs/voice_watcher.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>REPLACE_ME/sponge/logs/voice_watcher.log</string>
+</dict>
+</plist>

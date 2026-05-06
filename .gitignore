@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+.env
+
+# Data and logs (instance state)
+data/
+logs/
+graph.json
+*.jsonl
+
+# Whisper models (downloaded separately — large)
+models/
+
+# Voice memo working state
+inputs/voice_memos/
+archive/voice_memos/
+
+# Demo recordings (regenerated locally)
+docs/*.gif
+docs/*.mp4
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+*.swp

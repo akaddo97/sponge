@@ -1,0 +1,277 @@
+/* ============================================================
+   Verify pane — light theme.
+   Cream bg + dark text + yellow as the only action accent.
+   ============================================================ */
+
+.jazz-verify-screen {
+  background: var(--sp-bg);
+  color: var(--sp-text);
+  min-height: 100vh;
+  padding-bottom: 96px; /* room for fixed action bar */
+  font-family: 'Inter', sans-serif;
+}
+
+/* === HEADER === */
+.jazz-verify-header {
+  padding: 16px 20px 20px;
+  border-bottom: 1px solid var(--sp-border);
+  background: var(--sp-bg);
+}
+.jazz-verify-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--sp-text);
+  letter-spacing: -0.02em;
+}
+.jazz-verify-count {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--sp-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* === EMPTY STATE === */
+.jazz-verify-empty {
+  text-align: center;
+  padding: 80px 24px;
+  color: var(--sp-muted);
+}
+.jazz-verify-empty-glyph {
+  font-size: 48px;
+  color: var(--sp-yellow);
+  margin-bottom: 12px;
+  line-height: 1;
+}
+.jazz-verify-empty p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--sp-text);
+}
+
+/* === SECTION === */
+.jazz-verify-section-block {
+  padding: 16px 16px 8px;
+}
+.jazz-verify-section-h {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sp-muted);
+  margin: 8px 4px 12px;
+  font-weight: 600;
+}
+
+/* === BATCH CARD === */
+.jazz-verify-batch {
+  background: var(--sp-card);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.jazz-verify-batch-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.jazz-verify-batch-summary {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--sp-text);
+}
+.jazz-verify-batch-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* === EVENT CARD (collapsible) === */
+.jazz-verify-event {
+  background: var(--sp-card);
+  border: 1px solid var(--sp-border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.jazz-verify-event[open] {
+  border-color: var(--sp-yellow-pill-border);
+}
+.jazz-verify-event-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+.jazz-verify-event-summary::-webkit-details-marker { display: none; }
+.jazz-verify-event-titles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.jazz-verify-source {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--sp-text);
+  font-weight: 500;
+  word-break: break-all;
+  line-height: 1.3;
+}
+.jazz-verify-meta {
+  font-size: 12px;
+  color: var(--sp-muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.jazz-verify-chevron {
+  color: var(--sp-muted);
+  font-size: 14px;
+  transition: transform 160ms ease;
+}
+.jazz-verify-event[open] .jazz-verify-chevron {
+  transform: rotate(180deg);
+}
+
+/* === EVENT BODY === */
+.jazz-verify-body {
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--sp-border);
+  background: var(--sp-bg);
+}
+.jazz-verify-list-h {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sp-muted);
+  margin: 14px 0 8px;
+  font-weight: 600;
+}
+.jazz-verify-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 4px;
+}
+.jazz-verify-row {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--sp-border);
+}
+.jazz-verify-row:last-child { border-bottom: none; }
+.jazz-verify-row label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--sp-text);
+  cursor: pointer;
+  line-height: 1.4;
+}
+.jazz-verify-row input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sp-yellow);
+}
+.jazz-verify-row-label { flex: 1; word-break: break-word; }
+.jazz-verify-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--sp-muted);
+  background: var(--sp-bg);
+  border: 1px solid var(--sp-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.jazz-verify-rel {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--sp-muted);
+  font-style: normal;
+  margin: 0 4px;
+}
+.jazz-verify-event-error {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  background: #FBE9E7;
+  border-left: 3px solid #C0392B;
+  color: #8B1A0E;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* === BOTTOM ACTIONS (fixed) === */
+.jazz-verify-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(250, 248, 242, 0.97);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--sp-border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+  z-index: 50;
+}
+.jazz-verify-actions .jazz-btn { flex: 1; }
+
+/* === BUTTONS === */
+.jazz-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: opacity 120ms ease, background 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.jazz-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.jazz-btn-primary {
+  background: var(--sp-yellow);
+  color: var(--sp-text);
+}
+.jazz-btn-primary:active:not(:disabled) { background: var(--sp-yellow-ring); }
+.jazz-btn-reject {
+  background: var(--sp-card);
+  color: var(--sp-text);
+  border: 1px solid var(--sp-border);
+}
+.jazz-btn-reject:active:not(:disabled) { background: var(--sp-border); }
+
+/* === COMPACT BATCH BUTTONS === */
+.jazz-verify-batch-actions .jazz-btn {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+/* === BREAKPOINTS === */
+@media (min-width: 760px) {
+  /* Tablet+ in mobile-overridden mode: cap width for readability */
+  .jazz-verify-screen { max-width: 540px; margin: 0 auto; }
+  .jazz-verify-actions { max-width: 540px; margin: 0 auto; }
+}
+
+/* === 03: VERIFY FLASH === */
+/* Focus deep-link from M3 inline cards: 1.5s yellow border pulse drawing the
+   eye to the just-arrived event without being annoying. */
+@keyframes jazz-verify-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.0); }
+  20%  { box-shadow: 0 0 0 6px rgba(245, 197, 24, 0.45); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 197, 24, 0.0); }
+}
+.jazz-verify-event-flash {
+  animation: jazz-verify-flash 1.5s ease-out;
+  border-color: var(--sp-yellow) !important;
+}
+/* === END 03: VERIFY FLASH === */

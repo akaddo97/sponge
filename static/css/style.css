@@ -1,0 +1,628 @@
+/* ============================================================
+   S1 — JAZZ INTEGRATION CSS
+   Lifts Jazz's home + chat designs into runnable Sponge styles.
+   Sources: docs/hackathon_2026-05-02/02_design/jazz_output/
+            sponge-home-spec.css + sponge-chat-spec.css
+   Scope:   all selectors prefixed `.jazz-*` to avoid collision
+            with the canonical app/static/css/style.css.
+   Tokens:  Jazz's `--sp-*` names — kept verbatim per brief
+            ("become canonical going forward").
+   ============================================================ */
+
+/* === IMPORT === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=IBM+Plex+Mono:wght@400&display=swap');
+
+/* === TOKENS === */
+.jazz-screen, .jazz-chat-surface {
+  --sp-bg:                  #FAF8F2;
+  --sp-hero:                #1A1A1A;
+  --sp-yellow:              #F5C518;
+  --sp-yellow-ring:         #F7CF3A;
+  --sp-yellow-light:        #FEF5CC;
+  --sp-yellow-pill-border:  #F0D96A;
+  --sp-yellow-pill-text:    #5A4200;
+  --sp-blue:                #3A6B8C;
+  --sp-text:                #1A1A1A;
+  --sp-muted:               #888780;
+  --sp-border:              #E8E4D9;
+  --sp-card:                #F3F0E6;
+  --sp-bubble-recv:         #2A2A2A;     /* dark-mode chat per brief */
+  --sp-bubble-recv-text:    #E8E8E8;
+  --sp-bubble-sent:         var(--sp-yellow);
+  --sp-bubble-sent-text:    #1A1A1A;
+}
+
+/* === ROOT SCREEN === */
+.jazz-screen {
+  position: relative;
+  width: min(430px, 100%);
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--sp-bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--sp-text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Hide global nav inside jazz immersive screen — comment out for nav access */
+body.jazz-immersive .nav { display: none; }
+
+/* === STATUS BAR (mock iOS) === */
+.jazz-status-bar {
+  background: var(--sp-hero);
+  padding: 12px 24px 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* === HOME ZONE — collapses on chat takeover === */
+.jazz-home-zone {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  transition: opacity 280ms ease, transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.jazz-chat-active .jazz-home-zone {
+  opacity: 0;
+  transform: translateY(-12px);
+  pointer-events: none;
+}
+
+/* === HERO (dark) === */
+.jazz-hero {
+  background: var(--sp-hero);
+  padding: 28px 24px 32px;
+  text-align: center;
+}
+
+.jazz-logo {
+  font-size: 36px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.jazz-logo-accent { color: var(--sp-yellow); }
+
+.jazz-hero-tagline {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+/* === MIC BUTTON (hero) === */
+.jazz-mic-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--sp-yellow);
+  border: 3px solid var(--sp-yellow-ring);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease;
+}
+.jazz-mic-btn:active,
+.jazz-mic-btn.jazz-mic-recording {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 6px rgba(245, 197, 24, 0.25);
+}
+.jazz-mic-btn svg { width: 26px; height: 26px; }
+
+.jazz-mic-hint {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 0.3px;
+}
+
+/* === DIVIDER === */
+.jazz-divider { height: 1px; background: var(--sp-border); }
+
+/* === DASHBOARD GRID === */
+.jazz-grid-wrap { padding: 20px 20px 28px; }
+.jazz-grid-label {
+  font-size: 10px;
+  color: var(--sp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+.jazz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.jazz-widget {
+  background: var(--sp-card);
+  border: 0.5px solid var(--sp-border);
+  border-radius: 16px;
+  padding: 16px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.jazz-widget-label {
+  font-size: 10px;
+  color: var(--sp-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+.jazz-widget-value {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--sp-text);
+}
+.jazz-widget-value-sm { font-size: 16px; margin-top: 4px; }
+.jazz-widget-sub {
+  font-size: 11px;
+  color: var(--sp-muted);
+  margin-top: 2px;
+}
+
+/* === PROGRESS BAR === */
+.jazz-widget-bar-wrap {
+  background: var(--sp-border);
+  border-radius: 4px;
+  height: 4px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.jazz-widget-bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--sp-yellow);
+  transition: width 320ms ease;
+}
+
+/* === SPARK BARS === */
+.jazz-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 36px;
+  margin-top: 10px;
+}
+.jazz-spark-bar {
+  flex: 1;
+  background: var(--sp-yellow);
+  border-radius: 2px;
+  opacity: 0.4;
+}
+.jazz-spark-bar-active { opacity: 1; }
+
+/* === NODE PILLS (top connections) === */
+.jazz-node-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.jazz-node-pill {
+  background: var(--sp-yellow-light);
+  border: 0.5px solid var(--sp-yellow-pill-border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 10px;
+  color: var(--sp-yellow-pill-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.jazz-node-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sp-yellow);
+  flex-shrink: 0;
+}
+
+/* === STATS FOOTER === */
+.jazz-stats-footer {
+  border-top: 0.5px solid var(--sp-border);
+  padding: 6px 20px;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+.jazz-stats-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--sp-blue);
+  letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   CHAT SURFACE — full-screen takeover (dark per brief)
+   ============================================================ */
+.jazz-chat-surface {
+  position: fixed;
+  inset: 0;
+  background: var(--sp-hero);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transform: translateY(100%);
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+body.jazz-chat-active .jazz-chat-surface {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* === TOP NAV === */
+.jazz-top-bar {
+  background: var(--sp-hero);
+  padding: 12px 20px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-bottom: 0.5px solid #2A2A2A;
+}
+.jazz-top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.jazz-back-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2A2A2A;
+  border: none;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.jazz-top-logo {
+  font-size: 17px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+.jazz-graph-pill {
+  font-size: 10px;
+  color: #aaaaaa;
+  background: #2A2A2A;
+  border-radius: 20px;
+  padding: 5px 12px;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+}
+
+/* === CHAT AREA === */
+.jazz-chat-area {
+  flex: 1;
+  background: var(--sp-hero);
+  padding: 16px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.jazz-time-label {
+  font-size: 11px;
+  color: #444;
+  text-align: center;
+  margin: 4px 0;
+}
+
+/* === BUBBLES (iMessage-style, dark) === */
+.jazz-bubble-row {
+  display: flex;
+}
+.jazz-bubble-row-sent { justify-content: flex-end; }
+.jazz-bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  border-radius: 18px;
+}
+.jazz-bubble-sent {
+  background: var(--sp-bubble-sent);
+  color: var(--sp-bubble-sent-text);
+  border-bottom-right-radius: 4px;
+  font-weight: 500;
+}
+.jazz-bubble-recv {
+  background: var(--sp-bubble-recv);
+  color: var(--sp-bubble-recv-text);
+  border-bottom-left-radius: 4px;
+}
+.jazz-bubble-body { word-wrap: break-word; }
+.jazz-bubble-status { color: #999; font-style: italic; }
+.jazz-bubble-error { color: #FF6B6B; }
+
+/* === INLINE GRAPH CARD === */
+.jazz-graph-card {
+  background: #222;
+  border: 1px solid var(--sp-yellow);
+  border-radius: 14px;
+  padding: 13px 15px;
+  max-width: 85%;
+  margin-top: 2px;
+}
+.jazz-graph-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.jazz-graph-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sp-yellow);
+  flex-shrink: 0;
+}
+.jazz-graph-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+.jazz-graph-card-sub {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 10px;
+}
+.jazz-graph-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.jazz-graph-tag {
+  background: #2A2A2A;
+  border: 0.5px solid #444;
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-size: 10px;
+  color: #aaa;
+}
+.jazz-graph-card-link {
+  display: block;
+  font-size: 12px;
+  color: var(--sp-yellow);
+  font-weight: 500;
+  border-top: 0.5px solid #333;
+  padding-top: 9px;
+  text-decoration: none;
+}
+
+/* === MIC ACTIVE STATE (listening, inline in chat) === */
+.jazz-mic-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0 6px;
+}
+.jazz-waveform {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+}
+.jazz-wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--sp-yellow);
+}
+
+/* === INPUT BAR === */
+.jazz-input-bar {
+  border-top: 0.5px solid #2A2A2A;
+  background: var(--sp-hero);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.jazz-input-form {
+  display: flex;
+  flex: 1;
+  margin: 0;
+}
+.jazz-input-field {
+  flex: 1;
+  background: #2A2A2A;
+  border: none;
+  border-radius: 24px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #E8E8E8;
+  outline: none;
+  width: 100%;
+}
+.jazz-input-field::placeholder { color: #666; }
+.jazz-input-mic-btn,
+.jazz-input-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+}
+.jazz-input-mic-btn { background: var(--sp-yellow); }
+.jazz-input-mic-btn.jazz-mic-recording {
+  box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.35);
+}
+.jazz-input-send-btn { background: #2A2A2A; color: #888; }
+
+/* === MOBILE: edge-to-edge on small screens === */
+@media (max-width: 480px) {
+  .jazz-screen { width: 100%; }
+  .jazz-grid-wrap { padding: 16px 16px 24px; }
+  .jazz-grid { gap: 10px; }
+}
+
+/* === M4: TAP-TO-TOGGLE MIC === */
+/* Visual states for the tap-to-toggle mic. Both .jazz-mic-btn (hero) and
+   .jazz-input-mic-btn (chat input bar) share .recording / .uploading. */
+
+.jazz-mic-btn.recording,
+.jazz-input-mic-btn.recording {
+  animation: jazz-mic-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 6px rgba(245, 197, 24, 0.30);
+}
+
+.jazz-mic-btn.uploading,
+.jazz-input-mic-btn.uploading {
+  background: var(--sp-yellow-light);
+  cursor: wait;
+  position: relative;
+}
+.jazz-mic-btn.uploading::after,
+.jazz-input-mic-btn.uploading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(26, 26, 26, 0.25);
+  border-top-color: var(--sp-text);
+  border-radius: 50%;
+  animation: jazz-mic-spin 0.8s linear infinite;
+}
+
+@keyframes jazz-mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.30); }
+  50%      { box-shadow: 0 0 0 10px rgba(245, 197, 24, 0.10); }
+}
+
+@keyframes jazz-mic-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Floating recording banner — anchored above the input bar, visible only
+   when .jazz-recording-banner-active. Holds timer + warning + cancel. */
+.jazz-recording-banner {
+  display: none;
+  position: fixed;
+  left: 50%;
+  bottom: 80px;
+  transform: translateX(-50%);
+  z-index: 60;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 14px;
+  border-radius: 22px;
+  background: var(--sp-hero);
+  color: var(--sp-bubble-recv-text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+}
+.jazz-recording-banner.jazz-recording-banner-active {
+  display: inline-flex;
+}
+.jazz-recording-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sp-yellow);
+  animation: jazz-mic-pulse 1.4s ease-in-out infinite;
+}
+.jazz-recording-timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--sp-yellow);
+}
+.jazz-recording-warning {
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 1px solid #444;
+  color: #FF9F43;
+  font-size: 12px;
+}
+.jazz-recording-cancel {
+  margin-left: 6px;
+  background: transparent;
+  border: none;
+  color: var(--sp-bubble-recv-text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+.jazz-recording-cancel:hover {
+  background: #333;
+}
+/* === END M4: TAP-TO-TOGGLE MIC === */
+
+/* === 05: ASYNC BANNER === */
+/* Sticky transcribing banner inserted at the top of #jazz-chat-area while a
+   long voice memo is being transcribed asynchronously. One banner per
+   job_id; multiple banners stack at the top in submission order (newest
+   first). The visual sibling of .jazz-recording-banner — same palette,
+   different placement (in-chat-flow rather than floating above input). */
+.jazz-async-banner {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: var(--sp-hero);
+  color: var(--sp-bubble-recv-text);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+.jazz-async-banner-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(245, 197, 24, 0.30);
+  border-top-color: var(--sp-yellow);
+  border-radius: 50%;
+  animation: jazz-mic-spin 0.8s linear infinite;
+  flex: 0 0 auto;
+}
+.jazz-async-banner-text {
+  flex: 1 1 auto;
+  letter-spacing: 0.2px;
+}
+.jazz-async-banner-elapsed {
+  font-variant-numeric: tabular-nums;
+  color: var(--sp-yellow);
+  font-weight: 500;
+}
+/* === END 05: ASYNC BANNER === */

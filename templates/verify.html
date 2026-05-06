@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Verify — Jazz{% endblock %}
+{% block body_class %}jazz-immersive{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Sponge verify pane — review and approve provisional graph mutations. -->
+<div class="jazz-screen jazz-verify-screen" data-verify-jazz="root">
+
+  <div class="jazz-status-bar">
+    <span>9:41</span>
+    <span aria-hidden="true">▲ ● ▬</span>
+  </div>
+
+  <header class="jazz-verify-header">
+    <h1 class="jazz-verify-title">Verify</h1>
+    <p class="jazz-verify-count">
+      {% if events %}{{ events | length }} unverified event{{ 's' if events | length != 1 else '' }}{% else %}all clear{% endif %}
+    </p>
+  </header>
+
+  {% if not events and not batches %}
+  <div class="jazz-verify-empty" data-verify-jazz="empty">
+    <div class="jazz-verify-empty-glyph" aria-hidden="true">✓</div>
+    <p>All clear. Nothing to verify.</p>
+  </div>
+  {% endif %}
+
+  {% if batches %}
+  <section class="jazz-verify-section-block" aria-label="Bulk batches">
+    <h2 class="jazz-verify-section-h">Bulk batches</h2>
+    {% for b in batches %}
+    <article class="jazz-verify-batch" data-batch-prefix="{{ b.prefix }}">
+      <header class="jazz-verify-batch-head">
+        <span class="jazz-verify-source">{{ b.prefix }}</span>
+        <span class="jazz-verify-meta">{{ b.added_at_display }}</span>
+      </header>
+      <p class="jazz-verify-batch-summary">
+        {{ b.event_count }} profile{{ 's' if b.event_count != 1 else '' }}
+        · +{{ b.node_count }} nodes · +{{ b.edge_count }} edges
+      </p>
+      <div class="jazz-verify-batch-actions">
+        <button type="button"
+                class="jazz-btn jazz-btn-primary"
+                data-batch-action="apply"
+                data-batch-prefix="{{ b.prefix }}">
+          Verify all
+        </button>
+        <button type="button"
+                class="jazz-btn jazz-btn-reject"
+                data-batch-action="reject"
+                data-batch-prefix="{{ b.prefix }}">
+          Reject all
+        </button>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if events %}
+  <section class="jazz-verify-section-block" aria-label="Provisional events">
+    <h2 class="jazz-verify-section-h">Provisional events</h2>
+    {% for ev in events %}
+    {# data-node-ids enables /verify?focus=<id> deep-link from chat-stream cards. #}
+    <details class="jazz-verify-event"
+             data-event="{{ ev.provisional_source }}"
+             data-node-ids="{{ ev.nodes|map(attribute='id')|join(',') }}">
+      <summary class="jazz-verify-event-summary">
+        <div class="jazz-verify-event-titles">
+          <span class="jazz-verify-source">{{ ev.provisional_source }}</span>
+          <span class="jazz-verify-meta">
+            +{{ ev.node_count }} node{{ 's' if ev.node_count != 1 else '' }}
+            · +{{ ev.edge_count }} edge{{ 's' if ev.edge_count != 1 else '' }}
+            · {{ ev.added_at_display }}
+          </span>
+        </div>
+        <span class="jazz-verify-chevron" aria-hidden="true">▾</span>
+      </summary>
+
+      <div class="jazz-verify-body">
+
+        {% if ev.nodes %}
+        <h3 class="jazz-verify-list-h">Nodes</h3>
+        <ul class="jazz-verify-list">
+          {% for n in ev.nodes %}
+          <li class="jazz-verify-row">
+            <label>
+              <input type="checkbox"
+                     data-event="{{ ev.provisional_source }}"
+                     data-kind="node"
+                     data-key="{{ n.id }}"
+                     checked>
+              <span class="jazz-verify-row-label">{{ n.label }}</span>
+              <span class="jazz-verify-tag">{{ n.file_type }}</span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if ev.edges %}
+        <h3 class="jazz-verify-list-h">Edges</h3>
+        <ul class="jazz-verify-list">
+          {% for e in ev.edges %}
+          <li class="jazz-verify-row">
+            <label>
+              <input type="checkbox"
+                     data-event="{{ ev.provisional_source }}"
+                     data-kind="edge"
+                     data-key="{{ e.key }}"
+                     checked>
+              <span class="jazz-verify-row-label">
+                {{ e.source_label }}
+                <em class="jazz-verify-rel">--{{ e.relation }}--&gt;</em>
+                {{ e.target_label }}
+              </span>
+            </label>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <p class="jazz-verify-event-error" data-role="error" hidden></p>
+
+      </div>
+    </details>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+</div>
+
+{% if events %}
+<div class="jazz-verify-actions" data-verify-jazz="actions">
+  <button type="button"
+          id="jazz-verify-apply-btn"
+          class="jazz-btn jazz-btn-primary">
+    Verify selected
+  </button>
+  <button type="button"
+          id="jazz-verify-reject-btn"
+          class="jazz-btn jazz-btn-reject">
+    Reject selected
+  </button>
+</div>
+{% endif %}
+<!-- === END M2: VERIFY MOBILE === -->
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/verify.js') }}" defer></script>
+{% endblock %}
