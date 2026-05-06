@@ -95,26 +95,35 @@ Two abstraction seams:
 
 ## Quickstart
 
+Sponge installs in four steps.
+
 ```bash
-# 1. Clone + install
+# 1. Clone
 git clone https://github.com/akaddo97/sponge
 cd sponge
-uv venv
-uv pip install -e .
 
-# 2. Optional — install Whisper.cpp dependency for local transcription
-uv pip install -e ".[whisper]"
-# Then download a model into ./models/  (small.en is a good default at ~150 MB)
-# See docs/install_macos.md for the script.
+# 2. Create venv
+# macOS users — if your `python3` on PATH is Homebrew Python 3.13 or 3.14, `uv`
+# may refuse with "platform.mac_ver() returned an empty value". Use 3.12 explicitly:
+uv venv --python /opt/homebrew/opt/python@3.12/bin/python3.12 .venv
+# Other systems:
+# python3 -m venv .venv
+source .venv/bin/activate
 
-# 3. Configure your LLM provider
+# 3. Install package + download Whisper model (~140 MB)
+uv pip install -e ".[dev]"
+bash scripts/install_whisper.sh
+
+# 4. Configure your LLM provider, copy the demo graph, run
 export ANTHROPIC_API_KEY=...   # or GEMINI_API_KEY / OPENAI_API_KEY
 export LLM_PROVIDER=claude     # or gemini / openai (defaults to claude)
-
-# 4. Run the demo against the bundled synthetic graph
 cp examples/demo_graph/graph.json graph.json
-sponge   # starts on http://127.0.0.1:5050
+sponge                          # starts on http://127.0.0.1:5050
 ```
+
+`pywhispercpp` is now a core dependency, so the voice pipeline works out of the
+box. The legacy `pip install -e ".[whisper]"` extras still resolves (no-op alias)
+for anyone with it in muscle memory.
 
 Open `http://127.0.0.1:5050` on your laptop or — for the real demo — on your
 phone via [Tailscale](https://tailscale.com/) at `http://<your-mac>.<your-tailnet>:5050`.
@@ -189,7 +198,8 @@ streaming + tool-use under the hood; voice memos use the synchronous
 - macOS-first. The watcher + launchd plist target macOS; Linux works for
   the Flask app + manual file drop, but the iCloud Shortcut path is
   Apple-platform.
-- Whisper.cpp models aren't bundled (~150 MB each). Install separately.
+- Whisper.cpp models aren't bundled (~140 MB for `ggml-base.en.bin`). Run
+  `bash scripts/install_whisper.sh` after install — see Quickstart step 3.
 
 ## Roadmap
 

@@ -171,7 +171,7 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         v0.1 is sync (no async polling). Long memos block the request thread;
         keep memos under ~60s for the in-browser flow.
         """
-        # Field name matches the JS FormData contract (`file`) shared with AKKG's
+        # Field name matches the JS FormData contract (`file`) used by the
         # mobile UI. The frontend appends as form.append('file', blob, ...).
         if "file" not in request.files:
             return jsonify({"ok": False, "error": "audio file required (form field 'file')"}), 400

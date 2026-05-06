@@ -61,7 +61,8 @@ class WhisperLocalTranscriber:
             if not self.model_path.exists():
                 raise RuntimeError(
                     f"Whisper model not found at {self.model_path}. "
-                    f"Run scripts/install_whisper.sh or set WHISPER_MODEL."
+                    "Run `bash scripts/install_whisper.sh` from the repo root, "
+                    "or set WHISPER_MODEL to point at an existing ggml-base.en.bin."
                 )
             from pywhispercpp.model import Model
             self._model = Model(str(self.model_path))
