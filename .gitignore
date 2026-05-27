@@ -13,6 +13,14 @@ dist/
 .venv/
 venv/
 .env
+.env.*
+
+# Secrets — defensive, no current surface in this repo
+credentials/
+secrets/
+*.pem
+*.key
+id_rsa*
 
 # Data and logs (instance state)
 data/
