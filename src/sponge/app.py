@@ -22,14 +22,18 @@ Configuration: pass a GraphBackend to `create_app(backend=...)`. Default uses
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
 from flask import Flask, Response, jsonify, render_template, request
+
+log = logging.getLogger(__name__)
 
 from sponge.backends.json_file import JsonFileBackend
 from sponge.chat_briefer import brief
@@ -210,8 +214,14 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
                 app.config["SPONGE_BACKEND"],
                 memo_dir=data_dir / "voice_memos" / stem,
             )
-        except Exception as exc:
-            return jsonify({"ok": False, "error": f"{type(exc).__name__}: {exc}"}), 500
+        except Exception:
+            error_id = uuid.uuid4().hex[:8]
+            log.exception("audio_upload failed (error_id=%s, stem=%s)", error_id, stem)
+            return jsonify({
+                "ok": False,
+                "error": "internal error",
+                "error_id": error_id,
+            }), 500
 
         # Enrich proposal edges with source/target labels so the inline
         # verify-card in the chat can render readable text without a
@@ -355,8 +365,10 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
             yield _ssesend({"type": "hello"})
             try:
                 reply = brief(text, {"nodes": [], "edges": []})
-            except Exception as exc:
-                yield _ssesend({"type": "error", "error": f"{type(exc).__name__}: {exc}"})
+            except Exception:
+                error_id = uuid.uuid4().hex[:8]
+                log.exception("chat_query brief() failed (error_id=%s)", error_id)
+                yield _ssesend({"type": "error", "error": "internal error", "error_id": error_id})
                 return
             yield _ssesend({"type": "text", "text": reply})
             yield _ssesend({"type": "stop", "stop_reason": "end_turn"})
