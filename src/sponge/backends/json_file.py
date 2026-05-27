@@ -195,15 +195,16 @@ class JsonFileBackend:
         data = self._read()
         before_n = len(data["nodes"])
         before_e = len(data["edges"])
+        # Collect node ids about to be dropped before mutating data["nodes"]
+        # so dependent edges can be filtered in the same pass.
+        rejected_node_ids = {
+            n["id"] for n in data["nodes"]
+            if not n.get("verified", True) and n.get("provisional_source") == source
+        }
         data["nodes"] = [
             n for n in data["nodes"]
             if n.get("verified", True) or n.get("provisional_source") != source
         ]
-        # Drop edges with this source AND any edges referencing rejected nodes.
-        rejected_node_ids = {
-            n["id"] for n in self._read()["nodes"]
-            if n.get("provisional_source") == source and not n.get("verified", True)
-        } - {n["id"] for n in data["nodes"]}
         data["edges"] = [
             e for e in data["edges"]
             if (e.get("verified", True) or e.get("provisional_source") != source)
