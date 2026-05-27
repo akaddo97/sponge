@@ -119,6 +119,21 @@ def _group_provisional(backend: GraphBackend) -> tuple[list[dict], list[dict]]:
     return events, []
 
 
+def _collect_provisional_sources(backend: GraphBackend, prefix: str) -> set[str]:
+    """Collect distinct provisional_source values across nodes AND edges.
+
+    Iterating only nodes (the prior behaviour) silently dropped batches that
+    proposed edges-only (e.g. a memo asserting a new relation between two
+    already-known people).
+    """
+    sources: set[str] = set()
+    for record in (*backend.all_nodes(), *backend.all_edges()):
+        src = record.get("provisional_source", "")
+        if src and src.startswith(prefix):
+            sources.add(src)
+    return sources
+
+
 def _topics_from_backend(backend: GraphBackend, limit: int = 6) -> list[dict]:
     """Best-effort topic chips for the home dashboard.
 
@@ -302,14 +317,9 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         prefix = body.get("prefix") or ""
         if not prefix:
             return jsonify({"ok": False, "error": "prefix required"}), 400
-        flipped = 0
-        sources_seen: set[str] = set()
-        for n in app.config["SPONGE_BACKEND"].all_nodes():
-            src = n.get("provisional_source", "")
-            if src and src.startswith(prefix) and src not in sources_seen:
-                sources_seen.add(src)
-        for src in sources_seen:
-            flipped += app.config["SPONGE_BACKEND"].commit_provisional(src)
+        backend = app.config["SPONGE_BACKEND"]
+        sources_seen = _collect_provisional_sources(backend, prefix)
+        flipped = sum(backend.commit_provisional(src) for src in sources_seen)
         return jsonify({"ok": True, "flipped": flipped, "sources": list(sources_seen)})
 
     @app.route("/api/verify/reject_batch", methods=["POST"])
@@ -318,14 +328,9 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         prefix = body.get("prefix") or ""
         if not prefix:
             return jsonify({"ok": False, "error": "prefix required"}), 400
-        removed = 0
-        sources_seen: set[str] = set()
-        for n in app.config["SPONGE_BACKEND"].all_nodes():
-            src = n.get("provisional_source", "")
-            if src and src.startswith(prefix) and src not in sources_seen:
-                sources_seen.add(src)
-        for src in sources_seen:
-            removed += app.config["SPONGE_BACKEND"].reject_provisional(src)
+        backend = app.config["SPONGE_BACKEND"]
+        sources_seen = _collect_provisional_sources(backend, prefix)
+        removed = sum(backend.reject_provisional(src) for src in sources_seen)
         return jsonify({"ok": True, "removed": removed, "sources": list(sources_seen)})
 
     # ── chat (text input from the home search bar) ───────────────────────────
