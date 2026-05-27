@@ -133,6 +133,14 @@ class JsonFileBackend:
         if "source" not in edge or "target" not in edge:
             raise ValueError("edge must include 'source' and 'target'")
         data = self._read()
+        triple = (edge["source"], edge["target"], edge.get("relation", ""))
+        for existing in data["edges"]:
+            if (
+                existing.get("source"),
+                existing.get("target"),
+                existing.get("relation", ""),
+            ) == triple:
+                return
         new_edge = dict(edge)
         self._stamp_provisional(new_edge, provisional_source)
         data["edges"].append(new_edge)

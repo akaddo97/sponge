@@ -48,6 +48,28 @@ def test_add_edge_with_source_marks_provisional(backend):
     assert edges[0]["verified"] is False
 
 
+def test_add_edge_dedupes_identical_triple(backend):
+    """Same (source, target, relation) → silent skip, no second copy."""
+    backend.add_node({"id": "n1", "label": "A", "file_type": "person"})
+    backend.add_node({"id": "n2", "label": "B", "file_type": "company"})
+    backend.add_edge({"source": "n1", "target": "n2", "relation": "works_at"})
+    backend.add_edge({"source": "n1", "target": "n2", "relation": "works_at"})
+    edges = list(backend.all_edges())
+    assert len(edges) == 1
+
+
+def test_add_edge_allows_distinct_relations_between_same_nodes(backend):
+    """Different relation → distinct edge. Dedup is by triple, not by pair."""
+    backend.add_node({"id": "n1", "label": "A", "file_type": "person"})
+    backend.add_node({"id": "n2", "label": "B", "file_type": "person"})
+    backend.add_edge({"source": "n1", "target": "n2", "relation": "knows"})
+    backend.add_edge({"source": "n1", "target": "n2", "relation": "introduced_by"})
+    edges = list(backend.all_edges())
+    assert len(edges) == 2
+    relations = {e["relation"] for e in edges}
+    assert relations == {"knows", "introduced_by"}
+
+
 def test_commit_provisional_flips_verified_and_drops_source(backend):
     backend.add_node(
         {"id": "n1", "label": "A", "file_type": "person"},
