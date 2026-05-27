@@ -22,14 +22,18 @@ Configuration: pass a GraphBackend to `create_app(backend=...)`. Default uses
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
 from flask import Flask, Response, jsonify, render_template, request
+
+log = logging.getLogger(__name__)
 
 from sponge.backends.json_file import JsonFileBackend
 from sponge.chat_briefer import brief
@@ -119,6 +123,21 @@ def _group_provisional(backend: GraphBackend) -> tuple[list[dict], list[dict]]:
     return events, []
 
 
+def _collect_provisional_sources(backend: GraphBackend, prefix: str) -> set[str]:
+    """Collect distinct provisional_source values across nodes AND edges.
+
+    Iterating only nodes (the prior behaviour) silently dropped batches that
+    proposed edges-only (e.g. a memo asserting a new relation between two
+    already-known people).
+    """
+    sources: set[str] = set()
+    for record in (*backend.all_nodes(), *backend.all_edges()):
+        src = record.get("provisional_source", "")
+        if src and src.startswith(prefix):
+            sources.add(src)
+    return sources
+
+
 def _topics_from_backend(backend: GraphBackend, limit: int = 6) -> list[dict]:
     """Best-effort topic chips for the home dashboard.
 
@@ -195,8 +214,14 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
                 app.config["SPONGE_BACKEND"],
                 memo_dir=data_dir / "voice_memos" / stem,
             )
-        except Exception as exc:
-            return jsonify({"ok": False, "error": f"{type(exc).__name__}: {exc}"}), 500
+        except Exception:
+            error_id = uuid.uuid4().hex[:8]
+            log.exception("audio_upload failed (error_id=%s, stem=%s)", error_id, stem)
+            return jsonify({
+                "ok": False,
+                "error": "internal error",
+                "error_id": error_id,
+            }), 500
 
         # Enrich proposal edges with source/target labels so the inline
         # verify-card in the chat can render readable text without a
@@ -302,14 +327,9 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         prefix = body.get("prefix") or ""
         if not prefix:
             return jsonify({"ok": False, "error": "prefix required"}), 400
-        flipped = 0
-        sources_seen: set[str] = set()
-        for n in app.config["SPONGE_BACKEND"].all_nodes():
-            src = n.get("provisional_source", "")
-            if src and src.startswith(prefix) and src not in sources_seen:
-                sources_seen.add(src)
-        for src in sources_seen:
-            flipped += app.config["SPONGE_BACKEND"].commit_provisional(src)
+        backend = app.config["SPONGE_BACKEND"]
+        sources_seen = _collect_provisional_sources(backend, prefix)
+        flipped = sum(backend.commit_provisional(src) for src in sources_seen)
         return jsonify({"ok": True, "flipped": flipped, "sources": list(sources_seen)})
 
     @app.route("/api/verify/reject_batch", methods=["POST"])
@@ -318,14 +338,9 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         prefix = body.get("prefix") or ""
         if not prefix:
             return jsonify({"ok": False, "error": "prefix required"}), 400
-        removed = 0
-        sources_seen: set[str] = set()
-        for n in app.config["SPONGE_BACKEND"].all_nodes():
-            src = n.get("provisional_source", "")
-            if src and src.startswith(prefix) and src not in sources_seen:
-                sources_seen.add(src)
-        for src in sources_seen:
-            removed += app.config["SPONGE_BACKEND"].reject_provisional(src)
+        backend = app.config["SPONGE_BACKEND"]
+        sources_seen = _collect_provisional_sources(backend, prefix)
+        removed = sum(backend.reject_provisional(src) for src in sources_seen)
         return jsonify({"ok": True, "removed": removed, "sources": list(sources_seen)})
 
     # ── chat (text input from the home search bar) ───────────────────────────
@@ -350,8 +365,10 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
             yield _ssesend({"type": "hello"})
             try:
                 reply = brief(text, {"nodes": [], "edges": []})
-            except Exception as exc:
-                yield _ssesend({"type": "error", "error": f"{type(exc).__name__}: {exc}"})
+            except Exception:
+                error_id = uuid.uuid4().hex[:8]
+                log.exception("chat_query brief() failed (error_id=%s)", error_id)
+                yield _ssesend({"type": "error", "error": "internal error", "error_id": error_id})
                 return
             yield _ssesend({"type": "text", "text": reply})
             yield _ssesend({"type": "stop", "stop_reason": "end_turn"})

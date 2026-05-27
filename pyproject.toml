@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Voice-first agentic UI for personal knowledge graphs. Whisper local + propose-approve-commit + mobile Jazz interface."
 readme = "README.md"
 license = "MIT"
-authors = [{name = "Addo-Kwabena Addo", email = "akaddo97@gmail.com"}]
+authors = [{name = "Addo-Kwabena Addo", email = "akaddo97@users.noreply.github.com"}]
 requires-python = ">=3.11"
 keywords = [
     "voice",

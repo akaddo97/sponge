@@ -121,6 +121,42 @@ def test_apply_batch_flips_all_with_prefix(client, backend):
     assert resp.get_json()["flipped"] == 2
 
 
+def test_apply_batch_handles_edges_only_source(client, backend):
+    """A memo that proposes only a new edge (no new nodes) must still be
+    discoverable by prefix — the batch routes used to scan nodes only."""
+    backend.add_node({"id": "person_a", "label": "A", "file_type": "person"})
+    backend.add_node({"id": "person_b", "label": "B", "file_type": "person"})
+    backend.add_edge(
+        {"source": "person_a", "target": "person_b", "relation": "knows"},
+        provisional_source="voice_memo:edge_only",
+    )
+    resp = client.post(
+        "/api/verify/apply_batch",
+        json={"prefix": "voice_memo:"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "voice_memo:edge_only" in body["sources"]
+    assert body["flipped"] == 1
+
+
+def test_reject_batch_handles_edges_only_source(client, backend):
+    backend.add_node({"id": "person_a", "label": "A", "file_type": "person"})
+    backend.add_node({"id": "person_b", "label": "B", "file_type": "person"})
+    backend.add_edge(
+        {"source": "person_a", "target": "person_b", "relation": "knows"},
+        provisional_source="voice_memo:edge_only",
+    )
+    resp = client.post(
+        "/api/verify/reject_batch",
+        json={"prefix": "voice_memo:"},
+    )
+    assert resp.status_code == 200
+    body = resp.get_json()
+    assert "voice_memo:edge_only" in body["sources"]
+    assert body["removed"] >= 1
+
+
 def test_voice_job_endpoint_returns_501(client):
     """v0.1 doesn't ship async voice jobs."""
     resp = client.get("/api/voice/job/anything")

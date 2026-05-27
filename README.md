@@ -1,5 +1,9 @@
 # Sponge
 
+[![ci](https://github.com/akaddo97/sponge/actions/workflows/ci.yml/badge.svg)](https://github.com/akaddo97/sponge/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue.svg)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Voice-first agentic UI for a personal knowledge graph.**
 
 Tap to record on your phone → on-device transcription → the model proposes

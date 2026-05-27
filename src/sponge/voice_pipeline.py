@@ -69,6 +69,65 @@ class VoiceMemoResult:
         }
 
 
+def _post_transcript(
+    transcript: str,
+    *,
+    memo_id: str,
+    backend: GraphBackend,
+    memo_dir: Path,
+    captured_at: str,
+    metadata: dict,
+    audio_path: Path | None = None,
+    skip_briefer: bool = False,
+    skip_proposer: bool = False,
+    cleaner_skip_llm: bool = False,
+) -> VoiceMemoResult:
+    """Steps 2-6 of the voice memo pipeline: clean → propose → commit →
+    brief → persist trace. Shared between the audio path (Whisper-first)
+    and the markdown-sidecar path (transcribed upstream)."""
+    cleaned = clean_transcript(transcript, skip_llm=cleaner_skip_llm)
+
+    proposal: dict = {"nodes": [], "edges": []}
+    commit_summary: dict = {"nodes_added": 0, "edges_added": 0, "source": f"voice_memo:{memo_id}"}
+    if not skip_proposer and cleaned.text:
+        proposal = propose_from_transcript(cleaned.text, backend)
+        commit_summary = commit_proposal(
+            proposal,
+            source=f"voice_memo:{memo_id}",
+            backend=backend,
+        )
+
+    reply = ""
+    if not skip_briefer and cleaned.text:
+        reply = brief(cleaned.text, proposal)
+
+    result = VoiceMemoResult(
+        memo_id=memo_id,
+        transcript=transcript,
+        cleaned=cleaned,
+        proposal=proposal,
+        commit_summary=commit_summary,
+        briefer_reply=reply,
+        captured_at=captured_at,
+        metadata=metadata,
+    )
+
+    memo_dir.mkdir(parents=True, exist_ok=True)
+    (memo_dir / "transcript.txt").write_text(transcript, encoding="utf-8")
+    (memo_dir / "cleaned.txt").write_text(cleaned.text, encoding="utf-8")
+    (memo_dir / "result.json").write_text(
+        json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if audio_path and audio_path.exists() and audio_path.parent != memo_dir:
+        try:
+            shutil.copy2(audio_path, memo_dir / audio_path.name)
+        except OSError:
+            pass
+
+    return result
+
+
 def process_audio(
     audio_path: Path,
     backend: GraphBackend,
@@ -86,63 +145,34 @@ def process_audio(
     audio_path = Path(audio_path)
     memo_id = _make_memo_id(audio_path.stem)
 
-    # 1. Transcribe.
     tx = transcriber or get_transcriber()
     tx_result = tx.transcribe(audio_path)
     transcript = (tx_result.get("transcript") or "").strip()
 
-    # 2. Clean.
-    cleaned = clean_transcript(transcript, skip_llm=cleaner_skip_llm)
+    target_dir = Path(memo_dir) if memo_dir else Path.cwd() / "data" / "voice_memos" / memo_id
 
-    # 3+4. Propose + commit (skippable for offline tests).
-    proposal: dict = {"nodes": [], "edges": []}
-    commit_summary: dict = {"nodes_added": 0, "edges_added": 0, "source": f"voice_memo:{memo_id}"}
-    if not skip_proposer and cleaned.text:
-        proposal = propose_from_transcript(cleaned.text, backend)
-        commit_summary = commit_proposal(
-            proposal,
-            source=f"voice_memo:{memo_id}",
-            backend=backend,
-        )
-
-    # 5. Briefer reply.
-    reply = ""
-    if not skip_briefer and cleaned.text:
-        reply = brief(cleaned.text, proposal)
-
-    result = VoiceMemoResult(
+    return _post_transcript(
+        transcript,
         memo_id=memo_id,
-        transcript=transcript,
-        cleaned=cleaned,
-        proposal=proposal,
-        commit_summary=commit_summary,
-        briefer_reply=reply,
+        backend=backend,
+        memo_dir=target_dir,
         captured_at=_now_iso(),
         metadata={k: v for k, v in tx_result.items() if k != "transcript"},
+        audio_path=audio_path,
+        skip_briefer=skip_briefer,
+        skip_proposer=skip_proposer,
+        cleaner_skip_llm=cleaner_skip_llm,
     )
-
-    # 6. Persist trace.
-    target_dir = Path(memo_dir) if memo_dir else Path.cwd() / "data" / "voice_memos" / memo_id
-    target_dir.mkdir(parents=True, exist_ok=True)
-    (target_dir / "transcript.txt").write_text(transcript, encoding="utf-8")
-    (target_dir / "cleaned.txt").write_text(cleaned.text, encoding="utf-8")
-    (target_dir / "result.json").write_text(
-        json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    if audio_path.exists() and audio_path.parent != target_dir:
-        try:
-            shutil.copy2(audio_path, target_dir / audio_path.name)
-        except OSError:
-            pass
-
-    return result
 
 
 def process_markdown_sidecar(
     md_path: Path,
     backend: GraphBackend,
-    **kwargs,
+    *,
+    memo_dir: Path | None = None,
+    skip_briefer: bool = False,
+    skip_proposer: bool = False,
+    cleaner_skip_llm: bool = False,
 ) -> VoiceMemoResult:
     """Process a memo where transcription was already done by an iOS Shortcut
     (or similar) and dropped as a markdown sidecar. Reads the .md, runs the
@@ -152,46 +182,17 @@ def process_markdown_sidecar(
     audio_path = md_path.with_suffix(".m4a")
     memo_id = _make_memo_id(md_path.stem)
 
-    cleaned = clean_transcript(body, skip_llm=kwargs.pop("cleaner_skip_llm", False))
+    target_dir = Path(memo_dir) if memo_dir else Path.cwd() / "data" / "voice_memos" / memo_id
 
-    proposal: dict = {"nodes": [], "edges": []}
-    commit_summary: dict = {"nodes_added": 0, "edges_added": 0, "source": f"voice_memo:{memo_id}"}
-    if not kwargs.pop("skip_proposer", False) and cleaned.text:
-        proposal = propose_from_transcript(cleaned.text, backend)
-        commit_summary = commit_proposal(
-            proposal,
-            source=f"voice_memo:{memo_id}",
-            backend=backend,
-        )
-
-    reply = ""
-    if not kwargs.pop("skip_briefer", False) and cleaned.text:
-        reply = brief(cleaned.text, proposal)
-
-    result = VoiceMemoResult(
+    return _post_transcript(
+        body,
         memo_id=memo_id,
-        transcript=body,
-        cleaned=cleaned,
-        proposal=proposal,
-        commit_summary=commit_summary,
-        briefer_reply=reply,
+        backend=backend,
+        memo_dir=target_dir,
         captured_at=fm.get("captured_at", _now_iso()),
         metadata=fm,
+        audio_path=audio_path if audio_path.exists() else None,
+        skip_briefer=skip_briefer,
+        skip_proposer=skip_proposer,
+        cleaner_skip_llm=cleaner_skip_llm,
     )
-
-    memo_dir = kwargs.pop("memo_dir", None) or Path.cwd() / "data" / "voice_memos" / memo_id
-    memo_dir = Path(memo_dir)
-    memo_dir.mkdir(parents=True, exist_ok=True)
-    (memo_dir / "transcript.txt").write_text(body, encoding="utf-8")
-    (memo_dir / "cleaned.txt").write_text(cleaned.text, encoding="utf-8")
-    (memo_dir / "result.json").write_text(
-        json.dumps(result.to_dict(), indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    if audio_path.exists():
-        try:
-            shutil.copy2(audio_path, memo_dir / audio_path.name)
-        except OSError:
-            pass
-
-    return result
