@@ -35,7 +35,7 @@ dependencies = [
     # Sponge vendors `llm_providers` (until that package is on PyPI), which
     # reaches for whichever provider SDK is configured at runtime.
     "anthropic>=0.40",
-    "google-genai>=2.6.0",
+    "google-genai>=2.8.0",
     "openai>=1.40",
     # Voice pipeline is core — without Whisper, Sponge is just a chatbot UI.
     "pywhispercpp>=1.4.1",
