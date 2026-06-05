@@ -34,17 +34,17 @@ dependencies = [
     "flask>=3.1.3",
     # Sponge vendors `llm_providers` (until that package is on PyPI), which
     # reaches for whichever provider SDK is configured at runtime.
-    "anthropic>=0.40",
+    "anthropic>=0.105.2",
     "google-genai>=2.6.0",
-    "openai>=1.40",
+    "openai>=2.41.0",
     # Voice pipeline is core — without Whisper, Sponge is just a chatbot UI.
-    "pywhispercpp>=1.4.1",
+    "pywhispercpp>=1.5.0",
 ]
 
 [project.optional-dependencies]
 # `whisper` extras retained as a no-op alias — pywhispercpp now in core deps.
-whisper = ["pywhispercpp>=1.4.1"]
-dev = ["pytest>=9.0.3"]
+whisper = ["pywhispercpp>=1.5.0"]
+dev = ["pytest>=8"]
 
 [project.urls]
 Homepage = "https://github.com/akaddo97/sponge"

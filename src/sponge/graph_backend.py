@@ -2,7 +2,7 @@
 
 Sponge is a voice-first frontend; the backend is yours. Implement this
 Protocol against your storage of choice (JSON file, SQLite, Postgres,
-Neo4j, Datalinks, your own). The reference implementation in
+Neo4j, your own). The reference implementation in
 `sponge.backends.json_file.JsonFileBackend` is the simplest working version
 — a single JSON file with atomic writes — and is what powers the demo.
 
