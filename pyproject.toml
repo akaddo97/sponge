@@ -38,12 +38,12 @@ dependencies = [
     "google-genai>=2.6.0",
     "openai>=2.41.0",
     # Voice pipeline is core — without Whisper, Sponge is just a chatbot UI.
-    "pywhispercpp>=1.4.1",
+    "pywhispercpp>=1.5.0",
 ]
 
 [project.optional-dependencies]
 # `whisper` extras retained as a no-op alias — pywhispercpp now in core deps.
-whisper = ["pywhispercpp>=1.4.1"]
+whisper = ["pywhispercpp>=1.5.0"]
 dev = ["pytest>=8"]
 
 [project.urls]
