@@ -75,20 +75,21 @@ judgement. Voice is just how raw material gets in.
                    │                                           │
                    │  voice_pipeline · proposer · briefer      │
                    │  app (Flask routes) · Jazz UI · watcher   │
-                   └──────┬─────────────────────┬──────────────┘
-                          │                     │
-              GraphBackend Protocol     llm-providers
-              (your choice of store)    (Claude / Gemini / OpenAI)
-                          │                     │
-              ┌───────────┼─────────────┐    ┌──┴─────────────────┐
-              │           │             │    │                    │
-       JsonFileBackend  Postgres    Neo4j    │ ANTHROPIC_API_KEY  │
-       (default)        (yours)    (yours)   │ GEMINI_API_KEY     │
-                                              │ OPENAI_API_KEY     │
-                                              └────────────────────┘
+                   │  commit gate (snapshot → validate → keep) │
+                   └──┬───────────────┬───────────────┬────────┘
+                      │               │               │
+          GraphBackend Protocol   llm-providers    Validator Protocol
+          (your choice of store)  (your model)     (your rules)
+                      │               │               │
+          ┌───────────┼─────────┐    ┌┴───────────┐  ┌┴──────────────────┐
+          │           │         │    │            │  │                   │
+   JsonFileBackend  Postgres  Neo4j  │ provider   │  │ DefaultValidator  │
+   (default)        (yours)  (yours) │ key + name │  │ (default)         │
+                                     │ via env    │  │ your schema (yours)│
+                                     └────────────┘  └───────────────────┘
 ```
 
-Two abstraction seams:
+Three abstraction seams:
 
 - **`GraphBackend`** — your storage. The shipped `JsonFileBackend` writes
   a single JSON file with atomic writes and `fcntl` locking. Plenty for
@@ -96,6 +97,74 @@ Two abstraction seams:
   `GraphBackend` against a real database. Sponge's pipeline doesn't care.
 - **`llm-providers`** (vendored in `src/sponge/_vendored/`) — whichever
   Claude / Gemini / OpenAI you set via `LLM_PROVIDER`. Bring your own key.
+- **`Validator`** — your rules. The shipped `DefaultValidator` enforces only
+  generic structural invariants; the commit gate runs it under
+  snapshot-and-rollback so a rejected commit leaves the graph byte-identical.
+  Bring a richer schema by injecting your own (see [Validation gate](#validation-gate)).
+
+## Validation gate
+
+The propose-approve-commit loop is the whole point: the model proposes, you
+commit, you stay the editor of your own graph. The validation gate is what makes
+that promise enforceable — **a bad commit can't corrupt your graph.**
+
+Every commit passes through one chokepoint (`sponge.commit.guarded_commit`):
+
+```
+snapshot the store  →  apply the commit  →  run the validator
+        │                                          │
+        │                              clean ──────┘ keep it
+        └──────────── violations ──────────────────┐ restore byte-identical,
+                                                      return HTTP 422
+```
+
+Because the snapshot is the store's **raw bytes** (not a re-parsed dict), a
+rejected commit leaves the file on disk *byte-identical* to what it was — no
+reordered keys, no whitespace drift, nothing half-applied. The HTTP routes
+(`/api/verify/apply`, `/api/verify/apply_batch`) return `422` with the list of
+violations; the voice pipeline's provisional write is guarded the same way, so a
+malformed proposal can't land even before you review it.
+
+The shipped `DefaultValidator` carries only **generic structural rules** — the
+invariants any graph store needs, regardless of what your graph is *about*:
+
+- every node has a non-empty string `id`, `label`, and `file_type`;
+- node `id`s are unique;
+- every edge has `source`, `target`, `relation`, and both endpoints resolve to
+  a real node;
+- no node smuggles an embedded `edges`/`links` field;
+- if `verified` is present, it's a bool.
+
+It knows nothing about your domain. The synthetic demo graph passes it cleanly,
+and that's the standing test that it stays generic.
+
+### Bring your own validator
+
+Got a richer schema — required fields per type, a controlled relation
+vocabulary, status enums? Implement `Validator` and inject it, exactly as you'd
+bring your own backend:
+
+```python
+from sponge import Validator  # Protocol: one method, validate(graph) -> list[str]
+
+class MySchemaValidator:
+    def validate(self, graph: dict) -> list[str]:
+        violations = []
+        for node in graph.get("nodes", []):
+            if node.get("file_type") == "person" and not node.get("headline"):
+                violations.append(f"person {node['id']} needs a headline")
+        return violations  # empty list = clean
+```
+
+```python
+from sponge.app import create_app
+from my_validator import MySchemaValidator
+
+app = create_app(validator=MySchemaValidator())
+```
+
+Pass nothing and you get `DefaultValidator`. The gate is opt-out too — inject a
+validator whose `validate` always returns `[]` to disable it.
 
 ## Quickstart
 
@@ -180,6 +249,8 @@ streaming + tool-use under the hood; voice memos use the synchronous
 
 - Voice memo pipeline (transcribe → clean → propose → provisional commit → brief).
 - `JsonFileBackend` reference impl with atomic writes.
+- Validation gate: pluggable `Validator` + `DefaultValidator`, snapshot-and-rollback
+  at the commit boundary (a rejected commit leaves the graph byte-identical).
 - Provider-agnostic LLM via vendored `llm-providers` (Claude / Gemini / OpenAI).
 - Mobile Jazz UI (home + verify pane), tap-to-record mic.
 - launchd user-agent for the watcher.

@@ -232,6 +232,52 @@ class JsonFileBackend:
                     break
         return out
 
+    # --- snapshot / restore ---
+
+    def snapshot(self) -> bytes | None:
+        """Raw file bytes — the only form that survives a round-trip
+        byte-identical (re-serialising the parsed dict reorders keys and
+        whitespace). Returns b"" if the file doesn't exist yet."""
+        if not self.path.exists():
+            return b""
+        return self.path.read_bytes()
+
+    def restore(self, token: bytes) -> None:
+        """Write the snapshot bytes back through the same atomic temp-rename
+        path used by `_write`, so readers never see a partial file. An empty
+        token means 'there was no file' — remove it to restore that state."""
+        if token == b"":
+            try:
+                self.path.unlink()
+            except FileNotFoundError:
+                pass
+            return
+        tmp_fd, tmp_path = tempfile.mkstemp(
+            dir=self.path.parent,
+            prefix=self.path.name + ".",
+            suffix=".tmp",
+        )
+        try:
+            with os.fdopen(tmp_fd, "wb") as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                try:
+                    f.write(token)
+                    f.flush()
+                    os.fsync(f.fileno())
+                finally:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            os.replace(tmp_path, self.path)
+        except Exception:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
+
+    def load_graph(self) -> dict:
+        """Whole graph as a plain dict for a Validator to inspect."""
+        return self._read()
+
     def stats(self) -> dict:
         data = self._read()
         prov_n = sum(1 for n in data["nodes"] if not n.get("verified", True))

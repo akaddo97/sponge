@@ -37,7 +37,9 @@ log = logging.getLogger(__name__)
 
 from sponge.backends.json_file import JsonFileBackend
 from sponge.chat_briefer import brief
+from sponge.commit import guarded_commit
 from sponge.graph_backend import GraphBackend
+from sponge.validator import DefaultValidator, ValidationError, Validator
 from sponge.transcription import get_transcriber, parse_voice_memo_markdown
 from sponge.voice_cleaner import clean_transcript
 from sponge.voice_pipeline import process_audio, process_markdown_sidecar
@@ -154,8 +156,18 @@ def _ssesend(payload: dict) -> str:
 # --- factory ---
 
 
-def create_app(backend: GraphBackend | None = None) -> Flask:
-    """Build the Flask app. Call once per process."""
+def create_app(
+    backend: GraphBackend | None = None,
+    validator: Validator | None = None,
+) -> Flask:
+    """Build the Flask app. Call once per process.
+
+    Pass a `validator` to gate every commit through snapshot-and-rollback —
+    a commit that would corrupt the graph is rejected and the store is left
+    byte-identical. Defaults to `DefaultValidator` (generic structural rules);
+    pass your own `Validator` for a richer schema, or `validator=False`-style
+    opt-out by injecting a no-op. See `sponge.commit.guarded_commit`.
+    """
     app = Flask(
         __name__,
         template_folder=str(Path(__file__).resolve().parent.parent.parent / "templates"),
@@ -165,6 +177,7 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
     app.config["SPONGE_BACKEND"] = backend or JsonFileBackend(
         os.environ.get("SPONGE_GRAPH_PATH", str(Path.cwd() / "graph.json"))
     )
+    app.config["SPONGE_VALIDATOR"] = validator if validator is not None else DefaultValidator()
     app.config["SPONGE_DATA_DIR"] = Path(
         os.environ.get("SPONGE_DATA_DIR", str(Path.cwd() / "data"))
     )
@@ -309,7 +322,16 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
         source = body.get("provisional_source")
         if not source:
             return jsonify({"ok": False, "error": "provisional_source required"}), 400
-        flipped = app.config["SPONGE_BACKEND"].commit_provisional(source)
+        backend = app.config["SPONGE_BACKEND"]
+        try:
+            flipped = guarded_commit(
+                backend,
+                app.config["SPONGE_VALIDATOR"],
+                lambda: backend.commit_provisional(source),
+            )
+        except ValidationError as exc:
+            return jsonify({"ok": False, "error": "validation_failed",
+                            "violations": exc.violations}), 422
         return jsonify({"ok": True, "flipped": flipped})
 
     @app.route("/api/verify/reject", methods=["POST"])
@@ -329,7 +351,15 @@ def create_app(backend: GraphBackend | None = None) -> Flask:
             return jsonify({"ok": False, "error": "prefix required"}), 400
         backend = app.config["SPONGE_BACKEND"]
         sources_seen = _collect_provisional_sources(backend, prefix)
-        flipped = sum(backend.commit_provisional(src) for src in sources_seen)
+        try:
+            flipped = guarded_commit(
+                backend,
+                app.config["SPONGE_VALIDATOR"],
+                lambda: sum(backend.commit_provisional(src) for src in sources_seen),
+            )
+        except ValidationError as exc:
+            return jsonify({"ok": False, "error": "validation_failed",
+                            "violations": exc.violations}), 422
         return jsonify({"ok": True, "flipped": flipped, "sources": list(sources_seen)})
 
     @app.route("/api/verify/reject_batch", methods=["POST"])

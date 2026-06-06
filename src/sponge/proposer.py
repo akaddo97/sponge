@@ -21,7 +21,9 @@ import re
 from typing import Iterable
 
 from sponge._llm import get_provider
+from sponge.commit import guarded_commit
 from sponge.graph_backend import GraphBackend
+from sponge.validator import Validator
 
 log = logging.getLogger("sponge.proposer")
 
@@ -171,17 +173,28 @@ def commit_proposal(
     proposal: dict,
     source: str,
     backend: GraphBackend,
+    *,
+    validator: Validator | None = None,
 ) -> dict:
     """Write proposal nodes + edges to the backend, all flagged provisional
-    under `source`. Returns counts."""
-    nodes_added = 0
-    edges_added = 0
-    existing_ids = {n.get("id", "") for n in backend.all_nodes()}
-    for node in proposal.get("nodes") or []:
-        if node["id"] not in existing_ids:
-            backend.add_node(node, provisional_source=source)
-            nodes_added += 1
-    for edge in proposal.get("edges") or []:
-        backend.add_edge(edge, provisional_source=source)
-        edges_added += 1
-    return {"nodes_added": nodes_added, "edges_added": edges_added, "source": source}
+    under `source`. Returns counts.
+
+    When a `validator` is passed, the whole write goes through the commit
+    guard: if the proposal would leave the graph structurally invalid (e.g. an
+    edge whose endpoints don't resolve), the store is rolled back byte-identical
+    and a `ValidationError` is raised — a malformed proposal can't corrupt the
+    graph even before the user reviews it."""
+    def _apply() -> dict:
+        nodes_added = 0
+        edges_added = 0
+        existing_ids = {n.get("id", "") for n in backend.all_nodes()}
+        for node in proposal.get("nodes") or []:
+            if node["id"] not in existing_ids:
+                backend.add_node(node, provisional_source=source)
+                nodes_added += 1
+        for edge in proposal.get("edges") or []:
+            backend.add_edge(edge, provisional_source=source)
+            edges_added += 1
+        return {"nodes_added": nodes_added, "edges_added": edges_added, "source": source}
+
+    return guarded_commit(backend, validator, _apply)

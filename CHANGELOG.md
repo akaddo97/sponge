@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Validation gate: pluggable `Validator` Protocol + shipped `DefaultValidator` (generic structural rules), wired into the commit boundary with snapshot-and-rollback. A commit that would corrupt the graph is rejected with HTTP 422 and the store is restored byte-identical. New `snapshot()`/`restore()`/`load_graph()` on the `GraphBackend` Protocol; `create_app(validator=...)` injection; `commit_proposal(..., validator=...)` guards the voice pipeline's provisional write. Exported `Validator`, `DefaultValidator`, `ValidationError`.
 - README: status badges (CI, Python, License) under the title.
 - `CHANGELOG.md` — this file.
 - `.github/ISSUE_TEMPLATE/bug_report.md` and `.github/pull_request_template.md` — standard contribution scaffolding.

@@ -117,3 +117,30 @@ class GraphBackend(Protocol):
              "provisional_node_count": int, "provisional_edge_count": int}
         """
         ...
+
+    # --- snapshot / restore (optional — powers the commit gate) ---
+
+    def snapshot(self) -> bytes | None:
+        """Return an opaque token capturing the store's exact current state,
+        or None to opt out of snapshot-based rollback.
+
+        Sponge's commit gate snapshots, applies a provisional commit, runs the
+        validator, and — if the commit is rejected — calls `restore(token)` to
+        return the store to its pre-commit state. For a file backend the token
+        is the raw file bytes, so restore is byte-identical (re-serialising a
+        parsed dict would reorder keys/whitespace). A backend that returns None
+        signals it can't snapshot cheaply; the gate falls back to re-marking
+        the just-committed entries provisional.
+        """
+        ...
+
+    def restore(self, token: bytes) -> None:
+        """Restore the store to the state captured by `snapshot()`."""
+        ...
+
+    def load_graph(self) -> dict:
+        """Return the whole graph as a plain dict — at least
+            {"nodes": [...], "edges": [...]}
+        — for a Validator to inspect. Backend-agnostic: a database backend
+        materialises the same shape from its tables."""
+        ...

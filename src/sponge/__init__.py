@@ -14,10 +14,14 @@ from __future__ import annotations
 
 from sponge.graph_backend import GraphBackend
 from sponge.backends.json_file import JsonFileBackend
+from sponge.validator import DefaultValidator, ValidationError, Validator
 
 __all__ = [
     "GraphBackend",
     "JsonFileBackend",
+    "Validator",
+    "DefaultValidator",
+    "ValidationError",
     "__version__",
 ]
 
