@@ -119,8 +119,7 @@ snapshot the store  →  apply the commit  →  run the validator
 ```
 
 Because the snapshot is the store's **raw bytes** (not a re-parsed dict), a
-rejected commit leaves the file on disk *byte-identical* to what it was — no
-reordered keys, no whitespace drift, nothing half-applied. The HTTP routes
+rejected commit leaves the file on disk *byte-identical* to what it was. The HTTP routes
 (`/api/verify/apply`, `/api/verify/apply_batch`) return `422` with the list of
 violations; the voice pipeline's provisional write is guarded the same way, so a
 malformed proposal can't land even before you review it.
