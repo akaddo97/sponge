@@ -36,7 +36,7 @@ dependencies = [
     # reaches for whichever provider SDK is configured at runtime.
     "anthropic>=0.105.2",
     "google-genai>=2.6.0",
-    "openai>=2.41.0",
+    "openai>=3.6.0",
     # Voice pipeline is core — without Whisper, Sponge is just a chatbot UI.
     "pywhispercpp>=1.5.0",
 ]
